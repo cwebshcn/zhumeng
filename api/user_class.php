@@ -205,7 +205,9 @@ function login($u,$p){
 	$userinfo = get_user_info($u,$p);
 	$token="";
 	if(count($userinfo)>0){
-		$msg = base64_encode(json_encode(array("u"=>$u,"p"=>$p,"t"=>time())));
+		$info = base64_encode(json_encode(array("u"=>$u,"p"=>$p,"t"=>time())));
+		$type = $userinfo["user_type"];
+		$msg = array("token"=>$info,"user_type"=>$type);
 	}else{
 		$code=-1;
 		$msg = "用户不存在，或密码错误！";
@@ -277,12 +279,12 @@ function update_info(){
 	$sex       = @$_POST["sex"]+0;
 	$mobile    = @$_POST["mobile"];
 	$email     = @$_POST["email"];
-	$avatar    = @$_POST["avatar"];
+	$base64_img= @$_POST["avatar"];
 	$old_pswd  = @$_POST["old_pswd"];
 	$new_pswd  = @$_POST["new_pswd"];
 	$avatar_path = "";
 	//base64
-	if($avatar){
+	if($base64_img){
 		$image = explode(',',$base64_img);
 		$image = $image[1];
 		$imgName=date('YmdHis',time()).rand(100,999).".jpeg";
