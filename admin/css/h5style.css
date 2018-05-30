@@ -1,0 +1,59 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/*共公样式*/
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0; font-family:微软雅黑;}
+a:focus{outline:0}
+a:active{outline:0;text-decoration: none;color: #FF0000;}
+ul,li{list-style:none; list-style-type:none;}
+a{outline:0}
+img{border:0px}
+p{display:block;-webkit-margin-before:1em;-webkit-margin-after:1em;-webkit-margin-start:0;-webkit-margin-end:0}
+.clear{clear:both;height:0;line-height:0;font-size:0;margin:0;padding:0;border:0}
+.ellipsis{text-overflow:ellipsis;-o-text-overflow:ellipsis;-moz-text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+body{ background-color:#fff;}
+.pagewidth{width:100%; margin:0 auto;}
+.img100 img{width:100%;}
+.menu-selected{background:#b10000;}
+.floatleft,.floatli li{float:left;} 
+.width98{width:98%; margin:0 auto;}
+/*常规样式习惯补充*/
+.font24{font-size:24px;}
+.font18{font-size:18px;}
+.font16{font-size:16px;}
+.font38{font-size:38px; line-height:50px;}
+.green{color:#1da95b;}
+.padding-top-25{padding-top:25px;}
+.padding-bottom-25{padding-bottom:25px;}
+.back-f8 { background:#f8f8f8;}
+.padding25{padding:25px;}
+.padding10{padding:10px;}
+.paddingmargin0{padding:0;marign:0;}
+.paddin5{padding:5px;}
+.margin-top-25{margin-top:25px} 
+.marign-bottom-25{marign-bottom:25px;}
+.text-right{text-align:right;}
+.text-center{text-align:center;}
+.text-left{text-align:left;}
+.border-solid-1px{border:1px solid #eeeeee;}
+.text-height-30px-spanred{font-size:12px; line-height:30px;}
+.text-height-30px-spanred span{font-size:14px; color:#ff0000;}
+/*重写样式*/
+.row{margin:0px; }
+/*end*/
+
+
+.layout-icon li{ width:100px;float:left; }
+.layout-icon td{padding:5px;}
+.layout-mainbt1 li{ width:200px;float:left;margin-right:25px;}
+.layout-mainbt1 td{padding:5px;}
+.webinfo div{padding:5px;}
+/* 小屏幕（平板，大于等于 768px） */
+@media (min-width: 768px) { 
+
+}
+
+/* 中等屏幕（桌面显示器，大于等于 1003px） */
+@media (min-width: 1003px) { 
+.pagewidth{width:1003px;}
+ }
