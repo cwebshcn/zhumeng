@@ -9,7 +9,7 @@ $u=@$_POST["username"];  //用户名
 $p=@$_POST["password"];  //密码
 $msg=@$_POST["msgcode"];  //短信验证
 $tk = @$_POST["token"]; //
-$ut=@$_POST["usertype"]+0; //用户类型 reg
+$ut=@$_POST["usertype"]; //用户类型 reg
 $ut_id=@$_POST["uid"]+0; //用户ID
 $status=@$_POST["status"]+0; //用户ID
 $code= 0;
@@ -47,6 +47,9 @@ $msg = "error";
 		case "user_nexus_verify":
 			nexus_verify($ut_id);
 			break;
+		case "user_nexus_del":
+			nexus_del($ut_id);
+			break;
 		default:
 			# 报错
 			$code = -1;
@@ -69,26 +72,46 @@ function get_user_info($u,$p=""){
 }
 
 
+//得到数据
+function get_user_info_id($id){
+	global $lnk;
+	$userinfo=array();
+	$TRecord=$lnk -> query("select * from user where id='".$id."'");
+    while($rs=mysqli_fetch_assoc($TRecord))
+    {
+    	$userinfo = $rs;
+    }
+    return $userinfo;
+}
+
 function user_list($self=0,$status=0){
 	global $lnk;
 	global $code;
 	global $msg;
+
 	$userinfo=array();
 	$sqlstr = "";
-	$user = tk_to_user();
-	if(!$user)
-		return ;
-	$ut= $user["user_type"]==2 ? 1:2;
-	//$ut= $user["user_type"]==2 ? " and student=$ut_id":" and teacher=$ut_id";
-	if($self){
-		$ut_str=user_group($status);
-		if(!$ut_str){
-			$code = -1;
-			$msg = "no data !";
-			return;
+	$ut=@$_POST["usertype"]+0; //用户类型 reg
+	if($ut>0){
+
+	}else{
+		$user = tk_to_user();
+		if(!$user)
+			return ;
+		$ut= $user["user_type"]==2 ? 1:2;
+
+		if($self){
+			$ut_str=user_group($status);
+			if(!$ut_str){
+				$code = -1;
+				$msg = "no data !";
+				return;
+			}
+			$sqlstr =  $ut_str ? " and id in($ut_str)":"";	
 		}
-		$sqlstr =  $ut_str ? " and id in($ut_str)":"";	
 	}
+	//$ut= $user["user_type"]==2 ? " and student=$ut_id":" and teacher=$ut_id";
+	
 	$TRecord=$lnk -> query("select * from user where user_type='".$ut."' $sqlstr");
 	while($rs=mysqli_fetch_assoc($TRecord))
     {
@@ -109,7 +132,8 @@ function user_group($status){
 	$TRecord=$lnk -> query("select * from user_nexus where $user_ut=$ut_id and status=$status");
 	while($rs=mysqli_fetch_assoc($TRecord))
     {
-    	$str  = $return_str ? ",".$rs["id"] : $rs["id"];
+    	$user_ut2 = $user["user_type"]==1  ? "teacher": "student";
+    	$str  = $return_str ? ",".$rs[$user_ut2] : $rs[$user_ut2];
     	$return_str .= $str;
     }
     return $return_str;
@@ -131,10 +155,27 @@ function nexus_insert($ut_id){
 	if($user["user_type"]==2){
 		$student = $ut_id;
 		$teacher = $user["id"];
+		$status =1;
 	}else{
 		$student = $user["id"];
 		$teacher = $ut_id;
+		$status =0;
 	}
+
+	$student_arr = get_user_info_id($student);
+	$teacher_arr = get_user_info_id($teacher);
+
+	if($student_arr["user_type"]==2){
+		$code = -1;
+		$msg = "你不能绑定老师！";
+    	return ;
+	}
+	if($teacher_arr["user_type"]==1){
+		$code = -1;
+		$msg = "你不能绑定学生！";
+    	return ;
+	}
+
 	$TRecord=$lnk -> query("select * from user_nexus where teacher=$teacher and student=$student");
 	while($rs=mysqli_fetch_assoc($TRecord))
     {
@@ -142,7 +183,7 @@ function nexus_insert($ut_id){
 		$msg = "已绑定，无需再次绑定！";
     	return ;
     }
-	$lnk -> query("insert into user_nexus (student,teacher) values('$student','$teacher')");
+	$lnk -> query("insert into user_nexus (student,teacher,status) values('$student','$teacher','$status')");
 	$msg = "success!";	
 }
 
@@ -166,11 +207,39 @@ function nexus_verify($ut_id){
 	}else{
 		$code = -1;
 		$msg = "无权限，必需为老师身份！";
+		return;
 	}
 	$lnk -> query("update user_nexus set status=1 where teacher=$teacher and student=$student");
 	$msg = "success！";
 	return ;	
 }
+
+function nexus_del($ut_id){
+	global $lnk;
+	global $code;
+	global $msg;
+	if(!$ut_id){
+		$code = -1;
+		$msg = "传值错误，uid为必传！";
+		return;
+	}
+	$user = tk_to_user();
+	if(!$user)
+		return ;
+
+	if($user["user_type"]==2){
+		$student = $ut_id;
+		$teacher = $user["id"];
+	}else{
+		$code = -1;
+		$msg = "无权限，必需为老师身份！";
+		return;
+	}
+	$lnk -> query("delete from user_nexus  where teacher=$teacher and student=$student");
+	$msg = "del success";
+	return ;	
+}
+
 
 function reg($u,$p){
 	global $lnk;
@@ -236,12 +305,19 @@ function tk_to_user(){
 	global $code;
 	global $msg;
 	global $tk;
-	$u="";
+	global $u;
 	$p="";
 	if(!$tk){
-		$code = -1;
-		$msg = "缺少参数token！"; 
-		return ;
+		if($u){
+			$user = get_user_info($u);
+			$user["password"]="";
+			$msg = json_encode($user);
+			return $user;
+		}else{
+			$code = -1;
+			$msg = "缺少参数token！"; 
+			return ;
+		}	
 	}
 	$tk_decode = json_decode(base64_decode($tk), true);
 	if(is_array($tk_decode)){
