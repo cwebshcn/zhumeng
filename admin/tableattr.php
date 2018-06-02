@@ -107,6 +107,13 @@ goback();
 }
 else
 {
+	$field_num=get_field($list_id,$name);
+	//是否重复
+	if($field_num>0){
+		alert('字段已存在!');
+		goback();
+		exit();
+	}
 $insert_data="insert into tableattr (list_id,type,name,content) values ('$list_id','$type','$name','$content')";
 //echo $insert_data;
 $insert_result=$lnk -> query($insert_data) or die(mysql_error());
@@ -466,13 +473,36 @@ $content=$_POST["content"];
 $tp= ($type==2 or $type==3)?" longtext null":" char(255) null";
 $result=$lnk -> query("select * from tableattr where id=$pid");
 while($row=mysqli_fetch_assoc($result)){$rs=$row;}
+
+
+	$field_num=get_field($rs["list_id"],$name);
+	//是否重复
+	if($field_num>0 and $field_num!=$pid){
+		alert('字段已存在!');
+		goback();
+		exit();
+	}
+
 if($pid and $name and  $content){
 $lnk->query("alter table attr_list_".$rs["list_id"]." change ".$rs["name"]." $name $tp");
+
+
 $lnk->query("update tableattr set name='$name',type='$type',content='$content' where id=$pid");
 alert("更新成功！");
 go("?menuid=$menuid");
 }
 }
+
+
+
+function get_field($list_id,$name){
+	global $lnk;
+	$result=$lnk -> query("select * from tableattr where list_id=$list_id and name='$name'");
+	while($row=mysqli_fetch_assoc($result)){return $row["id"]+0;}
+	return 0;
+}
+
+
 ?>
 </body>
 </html>

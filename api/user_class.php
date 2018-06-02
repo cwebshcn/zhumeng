@@ -29,6 +29,10 @@ $msg = "error";
 			tk_to_user();
 			# 用户信息
 			break;
+		case "user_data":
+			user_data($u);
+			# 用户信息
+			break;
 		case 'update_info':
 			update_info();
 			# 更新信息
@@ -63,11 +67,33 @@ function get_user_info($u,$p=""){
 	$TRecord=$lnk -> query("select * from user where username='".$u."' $pswd_sql");
     while($rs=mysqli_fetch_assoc($TRecord))
     {
+
     	$userinfo = $rs;
+    	$userinfo["password"]="";
+
     }
     return $userinfo;
 }
 
+
+//得到数据
+function user_data($u){
+	global $lnk;
+	global $code;
+	global $msg;
+	$userinfo=array();
+	if(!$u){
+		$code = -1;
+		$msg = "缺少用户名参数！";
+		return;
+	}
+	$TRecord=$lnk -> query("select * from user where username='".$u."' $pswd_sql");
+    while($rs=mysqli_fetch_assoc($TRecord))
+    {
+    	$userinfo = $rs;
+    }
+    $msg =  $userinfo;
+}
 
 function user_list($self=0,$status=0){
 	global $lnk;
@@ -75,12 +101,14 @@ function user_list($self=0,$status=0){
 	global $msg;
 	$userinfo=array();
 	$sqlstr = "";
-	$user = tk_to_user();
-	if(!$user)
-		return ;
-	$ut= $user["user_type"]==2 ? 1:2;
+	
+	
 	//$ut= $user["user_type"]==2 ? " and student=$ut_id":" and teacher=$ut_id";
 	if($self){
+		$user = tk_to_user();
+		$ut= $user["user_type"]==2 ? 1:2;
+		if(!$user)
+			return ;
 		$ut_str=user_group($status);
 		if(!$ut_str){
 			$code = -1;
@@ -88,6 +116,13 @@ function user_list($self=0,$status=0){
 			return;
 		}
 		$sqlstr =  $ut_str ? " and id in($ut_str)":"";	
+	}else{
+		$ut=@$_POST["usertype"]+0; //用户类型 reg
+		if(!$ut){
+			$code = -1;
+			$msg ="缺少参数 usertype!";
+			return;
+		}
 	}
 	$TRecord=$lnk -> query("select * from user where user_type='".$ut."' $sqlstr");
 	while($rs=mysqli_fetch_assoc($TRecord))

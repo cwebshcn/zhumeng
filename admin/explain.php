@@ -187,7 +187,17 @@ if($menuid and $action==""){
 		<br><h4>API 示例</h4>
 		<a href="http://www.sunshine-net.com/demo/zhumeng/api/get_list.php?s=<?php echo $s["webpath"];?>" target="_blank">http://www.sunshine-net.com/demo/zhumeng/api/get_list.php?s=<?php echo $s["webpath"];?></a><br>
 		
-		<br><h4>API 返回字段说明</h4>
+
+		<br><h4>API 插入/更新 示例</h4>
+		<a href="http://www.sunshine-net.com/demo/zhumeng/api/push_data.php?s=<?php echo $s["webpath"];?>" target="_blank">http://www.sunshine-net.com/demo/zhumeng/api/push_data.php?s=<?php echo $s["webpath"];?></a><br>
+		<b>参数说明</b><br>
+		s 动作 ［<?php echo $s["webpath"];?>］<br>
+		id 更新的id编号  不传则插入新的数据 <br>
+		传参具体参数如下数据：（与获取数据相同）<br>
+
+		
+
+		<br><h4>API 获取和传值返回字段说明</h4>
 		{"code":0,"data":array}<br>
 		code 返回状态[0]  0 正常  大于0  data:错误原因<br>
 

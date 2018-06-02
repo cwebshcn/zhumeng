@@ -44,7 +44,7 @@ function get_list($classid,$sortid,$pagemin,$pagemax,$search,$order_by,$order_as
 	$px = $pagemax ? intval($pagemax) : 10;
 	$searchsql = $search ? "and name like'%".$search."%'" : "";
 	$order_by = intval($order_by)>0  ? intval($order_by) : 1;
-	$order_asc = intval($order_asc)>0 ? "desc" : "asc";
+	$order_asc = intval($order_asc)>0 ? " desc" : " asc";
 	$list =array();
 	$count = 0;
 
@@ -55,7 +55,7 @@ function get_list($classid,$sortid,$pagemin,$pagemax,$search,$order_by,$order_as
 	if($id>0) {
 		$sql ="select * from  attr_list_".$classid." where id = $id";
 	}else{
-		$sql = "select * from  attr_list_".$classid." where 1=1 $sortidSql $searchsql order by ".$order_by."  limit ".$pn.",".$px;
+		$sql = "select * from  attr_list_".$classid." where 1=1 $sortidSql $searchsql order by ".$order_by.$order_asc."  limit ".$pn.",".$px;
 	}
 	$result=$lnk -> query($sql);
 	while ($data=mysqli_fetch_assoc($result)){$list[]=$data;}
