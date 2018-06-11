@@ -108,7 +108,7 @@ function push_data($classid){
 	$update_sql="";
 	$id=@$_POST["id"]+0;
 
-	$sort_id =  @$_POST['sort_id']+0;
+	$sort_id =  @$_POST['t']+0;
 	$px      =  @$_POST['px']+0;
 	$name    =  @$_POST['name'];
 	if(!$name){
@@ -123,7 +123,7 @@ function push_data($classid){
 	}
 	if($sort_id>0){
 		$update_sql   .= ",sort_id='$sort_id'";
-		$insert_sql_k .=  ",".$sort_id;
+		$insert_sql_k .=  ",sort_id";
 		$insert_sql_v .=  ",'".$sort_id."'";
 	}
 
@@ -186,6 +186,7 @@ function push_data($classid){
 	}else{
 		$sql = "insert into attr_list_$classid (name,username $insert_sql_k) values('$name','".$user_name."' $insert_sql_v)";
 	}
+	//echo $sql;
 	$lnk -> query($sql);
 	$msg =  mysqli_insert_id($lnk);
 

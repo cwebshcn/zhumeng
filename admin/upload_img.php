@@ -22,7 +22,7 @@ $S_ImageExt = "jpg|png|gif|jpeg|pdf|mp3|mp4|bmp|doc|docx|xls|xlsx|ppt|pptx";
 <title>图片上传</title>
 <body style="background:#dddddd">
 <?php if (! isset($_POST['upload'])){ ?>
-<form method="POST" name="myform" enctype="multipart/form-data" action="upload.php">
+<form method="POST" name="myform" enctype="multipart/form-data" action="upload_img.php">
 <input type="hidden" name="MAX_FILE_SIZE" size="5200000">
 <?php for($count = 1; $count < $upload_slots+1; $count++) {echo '<input type="file" name="upload'.$count.'" size="29" style="border:1px solid #666666;height:20px">'; }?>
 <input type="hidden" name="slots" value="<?php echo $upload_slots; ?>">
@@ -37,17 +37,17 @@ $S_ImageExt = "jpg|png|gif|jpeg|pdf|mp3|mp4|bmp|doc|docx|xls|xlsx|ppt|pptx";
 			if (! $_FILES['upload'.$num]['name'] == ""){
 				if ($_FILES['upload'.$num]['size'] < $max_size) {
 					@$c=$_FILES['upload'.$num]['name'];
+
 					$ex_arr = explode(".",$c);
 					$ex = strtolower($ex_arr[count($ex_arr)-1]);
 					$pass_ex = "jpg|png|gif|jpeg|pdf|mp3|mp4|bmp|doc|docx|xls|xlsx|ppt|pptx|pbd";
 
 					if (strstr($pass_ex,$ex)){
-
 						$thisimg=date('YmdHis',time()).rand(10,99).".".$ex;
 						if ($bd_names=="upname1" or $bd_names=="upname2" or $bd_names=="upname3"){$thisform="forms[1]";}else{$thisform="forms[0]";}
 						if ($fname){$thisform="forms['".$fname."']";}
-						move_uploaded_file($_FILES['upload'.$num]['tmp_name'],"temp/".$thisimg) or $event = "Failure";
-						if ($bd_names =="logo"){
+						move_uploaded_file($_FILES['upload'.$num]['tmp_name'],"./temp/".$thisimg) or $event = "Failure";
+						// if ($bd_names =="logo"){
 							echo("<script>");
 							echo("var obj=opener.document.".$thisform.".".$bd_names.";");
 							echo("if(obj.value==''){");
@@ -64,14 +64,14 @@ $S_ImageExt = "jpg|png|gif|jpeg|pdf|mp3|mp4|bmp|doc|docx|xls|xlsx|ppt|pptx";
 							//echo("opener.Pshow_max();");
 							echo("self.close();");
 							echo("</script>");
-						}else{
-							if ($bd_names =="logo"){
-								echo "<script language='javascript'>opener.document.".$thisform.".".$_SESSION["bd_names"].".value='".$thisimg."';self.close();</script>";
-							}else{
-								echo "<script language='javascript'>opener.document.".$thisform.".".$_SESSION["bd_names"].".value='".$thisimg."';self.close();</script>";
-							}
-						}
-					}else{echo "不支持的格式[".$thisex."]";
+						// }else{
+						// 	if ($bd_names =="logo"){
+						// 		echo "<script language='javascript'>opener.document.".$thisform.".".$_SESSION["bd_names"].".value='".$thisimg."';self.close();</script>";
+						// 	}else{
+						// 		echo "<script language='javascript'>opener.document.".$thisform.".".$_SESSION["bd_names"].".value='".$thisimg."';self.close();</script>";
+						// 	}
+						// }
+					}else{echo "不支持的格式[".$ex."]";
 				}
 			} else {
 				$event = "文件超过限定大小";

@@ -224,6 +224,9 @@ break;
 case 8:
 $tyea="日期选择器";
 break;
+case 9:
+$tyea="图片/文档/列表";
+break;
 default:
 $tyea="其它";
 break;
@@ -318,6 +321,8 @@ if ($action=="addroot"){
 文本
 <input name="typea" type="radio" id="radio2" value="1">
 图片/文档
+<input name="typea" type="radio" id="radio9" value="9">
+图片/文档/列表
 <input name="typea" type="radio" id="radio3" value="2" >
 介绍
 <input name="typea" type="radio" id="radio4" value="3" >
@@ -369,6 +374,8 @@ while($row=mysqli_fetch_assoc($result)){
 文本
 <input name="typea" type="radio" id="radio2" value="1" <?php if($row["type"]==1) echo "checked=\"CHECKED\"";?>>
 图片/文档
+<input name="typea" type="radio" id="radio9" value="9" <?php if($row["type"]==9) echo "checked=\"CHECKED\"";?>>
+图片/文档/列表
 <input name="typea" type="radio" id="radio3" value="2" <?php if($row["type"]==2) echo "checked=\"CHECKED\"";?>>
 介绍
 <input name="typea" type="radio" id="radio4" value="3" <?php if($row["type"]==3) echo "checked=\"CHECKED\"";?>>

@@ -92,7 +92,7 @@ while($rs=mysqli_fetch_assoc($result))
 $mainbta=$lnk -> query("select * from mainbt order by px");
 while($mainbt=mysqli_fetch_assoc($mainbta))
 {
-$arr=menu_one($mainbt['id'],$_SESSION['uname_admin']);
+$arr=menu_one($mainbt['id'],@$_SESSION['uname_admin']);
 	if($arr){
 ?>
 	<li pid="90">

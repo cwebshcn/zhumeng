@@ -86,6 +86,9 @@ function  confirmLink(id)
 	}
 ?>	
 </div>
+<div class="text-center margin-top-25">
+<form action="list_all.php?menuid=<?php echo $menuid;?>&search=yes" method="post"><input name="key" value="<?php echo @$_POST["key"] ? $_POST["key"]:"请输入关键字";?>" class="text-info"><button class="btn btn-group btn-xs btn-info">查询</button></form>
+</div>
 <?php if($action==""){?>
 <table class="width98 table table-striped table-bordered table-hover js-table margin-top-25" data-toggle="table" data-url="" data-height="299" data-click-to-select="true"  data-select-item-name="radioName" id="table-ShipChk">
 <tr><td class="text-center font24"><strong><?php echo getIdTitle($menuid)?> 
@@ -107,6 +110,20 @@ echo " > ".sortid_sortname($sortid)?>
 <?php
 //数据列表
 $where= $sortid!="" ? " where sort_id in (".sqlsortid($sortid,"start").")": "";
+@$search=trim($_GET["search"]);
+if($search){
+@$key=trim($_POST["key"]);
+//是否存在关键字
+
+
+	if(!$sortid){
+		$where= $key ? " where name like '%$key%'":"";
+	}else{
+		$where.= $key ? " and name like '%$key%'":"";
+	}
+} 
+
+
 $result=$lnk -> query("select * from attr_list_".$menuid.$where." order by px,id desc"); 
 if($result){
 	while ($rs=mysqli_fetch_assoc($result)){
@@ -118,20 +135,6 @@ if($result){
 		}
 		echo "</td>";
 		echo "<td><p style='font-size:18px;'>".$rs["name"]."</p>";
-		if ($menuid==21){
-			$notice=total("data_notice"," where obj_id='".$rs["id"]."'")+0;
-			if($notice)
-			$notices="<a href='item_notice.php?menuid=$menuid&cid=".$rs["id"]."'>通知（".$notice ."） </a>";
-			else
-			$notices="通知（0）";
-			
-			
-			echo  "$notices   签到（0）  评估（0）  测试（0）";
-			
-			}
-		
-		
-		
 		echo  "</td>";  //标题
 		echo "<td>".$rs["px"]."</td>";  //排序
 		$citylist=($menuid==8)?"&nbsp;&nbsp;&nbsp;<a href='classlist.php?menuid=$menuid&cid=".$rs["id"]."'><span class='glyphicon glyphicon-calendar'></span></a>":"";
@@ -232,6 +235,7 @@ echo " > ".sortid_sortname($sortid)?></strong> 数据添加</td>
 					$typea="<input name='".$rs["name"]."' type='text' id='".$rs["name"]."' value='' size='30'>
     <input type='button' name='Submit11' value='上传' onClick=\"window.open('./upload.php?formname=myform&editname=".$rs["name"]."&uppath=".$rs["name"]."&filelx=jpg','','status=no,scrollbars=no,top=20,left=110,width=400,height=100')\">";
 					break;
+
 				case 2:
 					$typea="<textarea name='".$rs["name"]."' cols='40' rows='3'></textarea>";
 					break;
@@ -276,6 +280,11 @@ echo " > ".sortid_sortname($sortid)?></strong> 数据添加</td>
     todayBtn: true,
     pickerPosition: 'bottom-left'
 })</script>";
+					break;
+
+				case 9:
+					$typea="<input name='".$rs["name"]."' type='text' id='".$rs["name"]."' value='' size='30'>
+    <input type='button' name='Submit11' value='上传' onClick=\"window.open('./upload_img.php?formname=myform&editname=".$rs["name"]."&uppath=".$rs["name"]."&filelx=jpg','','status=no,scrollbars=no,top=20,left=110,width=400,height=100')\">";
 					break;
 					
 				default: //文本框  0
@@ -447,6 +456,10 @@ echo " > ".sortid_sortname($sortid)?></strong> 数据编辑</td>
     pickerPosition: 'bottom-left'
 })</script>";
 					break;
+				case 9:
+					$typea="<input name='".$rs["name"]."' type='text' id='".$rs["name"]."' value='".$rs_edit[$rs["name"]]."' size='30'>
+    <input type='button' name='Submit11' value='上传' onClick=\"window.open('./upload_img.php?formname=myform&editname=".$rs["name"]."&uppath=".$rs["name"]."&filelx=jpg','','status=no,scrollbars=no,top=20,left=110,width=400,height=100')\">";
+					break;
 				default: //文本框  0
 					$typea="<input name='".$rs["name"]."' type='text'  value='".$rs_edit[$rs["name"]]."' size='40'>";
 					break;
@@ -477,7 +490,7 @@ if($action=="addnewdata"){
 	
 	$px=$_POST["px"]+0;
 	$list_id=$menuid;
-	$sort_id=$_POST["sortid"]+0;
+	$sort_id=@$_POST["sortid"]+0;
 	$name=$_POST["name"];
 	//得到表字段
 	$sql="select * from tableattr where list_id=".$menuid." order by px";
@@ -508,7 +521,7 @@ if($action=="editb" and $pid>0){
 	
 	$px=$_POST["px"]+0;
 	$list_id=$menuid;
-	$sort_id=$_POST["sortid"]+0;
+	$sort_id=@$_POST["sortid"]+0;
 	$name=$_POST["name"];
 	//得到表字段
 	$sql="select * from tableattr where list_id=".$menuid." order by px";

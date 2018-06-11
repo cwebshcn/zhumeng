@@ -1,4 +1,5 @@
-<?php include 'config/admin.php';
+<?php
+include 'config/admin.php';
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">

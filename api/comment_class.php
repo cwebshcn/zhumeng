@@ -5,78 +5,121 @@ header("Content-Type:  application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *");
 
 $action = @$_GET["s"];   //动作
-$u=@$_POST["username"];  //用户名
-$p=@$_POST["password"];  //密码
-$msg=@$_POST["msgcode"];  //短信验证
+$list_code = @$_REQUEST["c"];   //列表
+$pid = @$_REQUEST["pid"]+0;   //列表
+$parent = @$_REQUEST["parent"]+0;   //列表
+
 $tk = @$_POST["token"]; //
-$ut=@$_POST["usertype"]+0; //用户类型 reg
-$ut_id=@$_POST["uid"]+0; //用户ID
-$status=@$_POST["status"]+0; //用户ID
-$business_status = @$_REQUEST["bs"]+0; //用户ID
+
 $code= 0;
 $msg = "error";
 
 
-	switch ($action) {
-		case 'reg':
-			reg($u,$p);
-			# 注册
-			break;
-		case 'login':
-			login($u,$p);
-			# 登录
-			break;
-		case "userinfo":
-			tk_to_user();
-			# 用户信息
-			break;
-		case "user_data":
-			user_data($u);
-			# 用户信息
-			break;
-		case 'update_info':
-			update_info();
-			# 更新信息
-			break;
-		case 'user_list':
-			user_list();
-			# 更新信息
-			break;
-		case 'user_busniess':
-			user_business($business_status);
-			# 更新信息
-			break;
-		case 'user_list_self':
-			user_list(1,$status);
-			# 更新信息
-			break;
-		case "user_nexus":
-			nexus_insert($ut_id);
-			break;
-		case "user_nexus_verify":
-			nexus_verify($ut_id);
-			break;
-		case "user_nexus_del":
-			nexus_del($ut_id);
-			break;
-		default:
-			# 报错
-			$code = -1;
-			$msg = "参数错误！";
-			break;
-	}
+switch ($action) {
+	case 'comment_list':
+		comment_list();
+		# 注册
+		break;
+	case 'comment_write':
+		comment_write();
+		# 登录
+		break;
+	default:
+		# 报错
+		$code = -1;
+		$msg = "参数错误！";
+		break;
+}
 
-function user_business($business_status){
+function comment_list($parent=0){
 	global $lnk;
+	global $list_code;
+	global $pid;
 	global $code;
 	global $msg;
+	$list_id = @$_REQUEST["list_id"]+0;
+	$info_arr =array();
+	if(!$list_code){
+		if(!$list_id){ //扩展用的
+			$code = -1;
+			$msg ="没有找到对应列表！";
+			return;
+		}	
+	}else{
+		$list_code1 = list_code($list_code);
+		$list_code = $list_code1["code"];
+	}
+	if(!$pid){
+		$code = -1;
+		$msg ="缺少参数，文章评论所需要的pid";
+		return;
+	}
+
+	$result=$lnk -> query("select * from comment where message_action='".$list_code."' and pid = $pid and parent_id=$parent");
+    while($rs=mysqli_fetch_assoc($result))
+    {
+    	$msg_arr = $rs; 
+    	$down_message = comment_list($rs["id"]);
+    	if($down_message)
+    		$msg_arr["down_message"]=json_encode($down_message);
+    	$info_arr[] = $msg_arr;
+    }
+    $msg =  $info_arr;
+}
+
+function comment_write(){
+	global $lnk;
+	global $list_code;
+	global $pid;
+	global $parent;
+	global $code;
+	global $msg;
+	$message_body = trim($_REQUEST["message_body"]);
+	if(!$list_code){
+		$code = -1;
+		$msg ="无效动作";
+		return;
+	}
+	if(!$pid){
+		$code = -1;
+		$msg ="缺少参数，文章评论所需要的pid";
+		return;
+	}
+	if(!$message_body){
+		$code = -1;
+		$msg ="缺少参数，文章评论内容message_body";
+		return;
+	}
 	$user = tk_to_user();
 	if(!$user)
-			return ;
-	$lnk -> query("update user set is_business=$business_status where username='".$user["username"]."'");
-	$msg ="success!";
-	$code = 0;
+		return;
+	$user["password"]="";
+
+	$list_code1 = list_code($list_code);
+	$code_act = $list_code1["code"];
+	$list_id = $list_code1["list_id"]+0;
+
+	$userinfo =json_encode($user);
+
+	$lnk -> query("insert into comment(parent_id,list_id,pid,username,userinfo,message_body,message_action,message_date) values('$parent','$list_id','$pid','".$user["username"]."','".$userinfo."','$message_body','$code_act','".time()."')");
+	$msg = "success!";
 }
+
+
+function list_code($list_code){	
+	global $lnk;
+	$list_arr = array("code"=>$list_code,"list_id"=>0);
+	$code = "a|b";//保留字段
+	//if(strstr())
+
+	$TRecord=$lnk -> query("select * from mainbt1 where webpath='".$list_code."'");
+    while($rs=mysqli_fetch_assoc($TRecord))
+    {
+    	$list_arr["list_id"]=$rs["id"];
+    }
+	return $list_arr;  //以后这里改一些特珠评论先扩展着
+}
+
 
 
 //得到数据
@@ -89,7 +132,8 @@ function get_user_info($u,$p=""){
     {
 
     	$userinfo = $rs;
-    	$userinfo["password"]="";
+    	$userinfo["nick_name"] = urlencode($rs["nick_name"]);
+    	$userinfo["password"]="***";
 
     }
     return $userinfo;
@@ -164,152 +208,10 @@ function user_group($status){
 	$TRecord=$lnk -> query("select * from user_nexus where $user_ut=$ut_id and status=$status");
 	while($rs=mysqli_fetch_assoc($TRecord))
     {
-    	$user_ut = $user["user_type"]==1  ? "teacher": "student";
-    	$str  = $return_str ? ",".$rs[$user_ut] : $rs[$user_ut];
+    	$str  = $return_str ? ",".$rs["id"] : $rs["id"];
     	$return_str .= $str;
     }
     return $return_str;
-}
-
-function nexus_insert($ut_id){
-	global $lnk;
-	global $code;
-	global $msg;
-	if(!$ut_id){
-		$code = -1;
-		$msg = "传值错误，uid为必传！";
-		return;
-	}
-	$user = tk_to_user();
-	if(!$user)
-		return ;
-
-	if($user["user_type"]==2){
-		$student = $ut_id;
-		$teacher = $user["id"];
-	}else{
-		$student = $user["id"];
-		$teacher = $ut_id;
-	}
-	$TRecord=$lnk -> query("select * from user_nexus where teacher=$teacher and student=$student");
-	while($rs=mysqli_fetch_assoc($TRecord))
-    {
-    	$code = -1;
-		$msg = "已绑定，无需再次绑定！";
-    	return ;
-    }
-	$lnk -> query("insert into user_nexus (student,teacher) values('$student','$teacher')");
-	$msg = "success!";	
-}
-
-
-function nexus_verify($ut_id){
-	global $lnk;
-	global $code;
-	global $msg;
-	if(!$ut_id){
-		$code = -1;
-		$msg = "传值错误，uid为必传！";
-		return;
-	}
-	$user = tk_to_user();
-	if(!$user)
-		return ;
-
-	if($user["user_type"]==2){
-		$student = $ut_id;
-		$teacher = $user["id"];
-	}else{
-		$code = -1;
-		$msg = "无权限，必需为老师身份！";
-	}
-	$lnk -> query("update user_nexus set status=1 where teacher=$teacher and student=$student");
-	$msg = "success！";
-	return ;	
-}
-
-function nexus_del($ut_id){
-	global $lnk;
-	global $code;
-	global $msg;
-	if(!$ut_id){
-		$code = -1;
-		$msg = "传值错误，uid为必传！";
-		return;
-	}
-	$user = tk_to_user();
-	if(!$user)
-		return ;
-
-	if($user["user_type"]==2){
-		$student = $ut_id;
-		$teacher = $user["id"];
-	}else{
-		$code = -1;
-		$msg = "无权限，必需为老师身份！";
-		return;
-	}
-	$lnk -> query("delete from user_nexus  where teacher=$teacher and student=$student");
-	//$msg = "delete from user_nexus  where teacher=$teacher and student=$student";
-	return ;	
-}
-
-function reg($u,$p){
-	global $lnk;
-	global $code;
-	global $msg;
-	global $ut;
-	if($ut<1 or $ut>2){
-		$code = -1;
-		$msg = "用户类型（usertype）未传值！1:学生，2老师";
-		return;
-	}
-	if(user_info_check($u,$p)==1)
-		return ;
-	
-	$userinfo = get_user_info($u);
-	if(count($userinfo)==0){
-		$ip=getip();
-		$useragent = $_SERVER['HTTP_USER_AGENT'];
-		$lnk -> query("insert into user (username,password,user_type,nick_name,reg_ip,reg_date,useragent) values('$u','".md5($p)."','$ut','$u','$ip','".time()."','$useragent')");
-	    $msg = base64_encode(json_encode( array("u"=>$u,"p"=>$p,"t"=>time())));
-	}else{
-		$code = -1;
-		$msg = "用户已存在！";
-	}
-}
-
-function login($u,$p){
-	global $code;
-	global $msg;
-	if(user_info_check($u,$p)==1)
-		return ;
-	$userinfo = get_user_info($u,$p);
-	$token="";
-	if(count($userinfo)>0){
-		$info = base64_encode(json_encode(array("u"=>$u,"p"=>$p,"t"=>time())));
-		$type = $userinfo["user_type"];
-		$msg = array("token"=>$info,"user_type"=>$type);
-	}else{
-		$code=-1;
-		$msg = "用户不存在，或密码错误！";
-	}
-}
-
-function user_info_check($u,$p){
-	global $code;
-	global $msg;
-	if(strlen($u)<6){
-		$code = -1;
-		$msg = "用户名不能少于6位！"; 
-		return 1;
-	}
-	if(strlen($p)<6){
-		$code = -1;
-		$msg = "密码不能少于6位！"; 
-		return 1;
-	}
-	return 0;
 }
 
 

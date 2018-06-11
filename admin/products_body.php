@@ -1,4 +1,4 @@
-<?php                                
+<?php
 include 'config/admin.php';
 ?>
 <!DOCTYPE html>
